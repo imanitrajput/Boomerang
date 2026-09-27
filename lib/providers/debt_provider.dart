@@ -56,6 +56,20 @@ class DebtProvider with ChangeNotifier {
     
     _isLoading = false;
     notifyListeners();
+
+    _rescheduleActiveReminders();
+  }
+
+  Future<void> _rescheduleActiveReminders() async {
+    for (var debt in activeDebts) {
+      await NotificationService.scheduleDebtReminder(
+        id: debt.id.hashCode,
+        personName: debt.personName,
+        amount: debt.amount,
+        currency: debt.currency,
+        scheduledDate: debt.date,
+      );
+    }
   }
 
   Future<void> _saveDebts() async {
@@ -72,7 +86,7 @@ class DebtProvider with ChangeNotifier {
     
     // Schedule reminder
     await NotificationService.scheduleDebtReminder(
-      id: debt.id,
+      id: debt.id.hashCode,
       personName: debt.personName,
       amount: debt.amount,
       currency: debt.currency,
@@ -88,10 +102,10 @@ class DebtProvider with ChangeNotifier {
       await _saveDebts();
 
       // Reschedule reminder
-      await NotificationService.cancelReminder(updatedDebt.id);
+      await NotificationService.cancelDebtReminder(updatedDebt.id.hashCode);
       if (!updatedDebt.isPaidOff) {
         await NotificationService.scheduleDebtReminder(
-          id: updatedDebt.id,
+          id: updatedDebt.id.hashCode,
           personName: updatedDebt.personName,
           amount: updatedDebt.amount,
           currency: updatedDebt.currency,
@@ -104,7 +118,7 @@ class DebtProvider with ChangeNotifier {
   Future<void> deleteDebt(String debtId) async {
     _debts.removeWhere((d) => d.id == debtId);
     await _saveDebts();
-    await NotificationService.cancelReminder(debtId);
+    await NotificationService.cancelDebtReminder(debtId.hashCode);
   }
 
   Future<void> addPayment(String debtId, Payment payment) async {
@@ -115,7 +129,7 @@ class DebtProvider with ChangeNotifier {
       
       // If paid off, cancel reminder
       if (_debts[index].isPaidOff) {
-        await NotificationService.cancelReminder(debtId);
+        await NotificationService.cancelDebtReminder(debtId.hashCode);
       }
     }
   }
@@ -124,5 +138,6 @@ class DebtProvider with ChangeNotifier {
     _debts = newDebts;
     _debts.sort((a, b) => b.date.compareTo(a.date));
     await _saveDebts();
+    _rescheduleActiveReminders();
   }
 }

@@ -1,4 +1,6 @@
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:flutter_timezone/flutter_timezone.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:timezone/timezone.dart' as tz;
 import 'package:timezone/data/latest.dart' as tz;
 
@@ -8,6 +10,8 @@ class NotificationService {
   static Future<void> init() async {
     try {
       tz.initializeTimeZones();
+      final String timeZoneName = await FlutterTimezone.getLocalTimezone();
+      tz.setLocalLocation(tz.getLocation(timeZoneName));
       
       const AndroidInitializationSettings initializationSettingsAndroid =
           AndroidInitializationSettings('ic_notification');
@@ -18,59 +22,92 @@ class NotificationService {
       
       await _notifications.initialize(initializationSettings);
 
-      // Request permissions for Android 13+
+      // Setup channel for Android
       final androidPlugin = _notifications.resolvePlatformSpecificImplementation<
           AndroidFlutterLocalNotificationsPlugin>();
       
       if (androidPlugin != null) {
-        await androidPlugin.requestNotificationsPermission();
-        await androidPlugin.requestExactAlarmsPermission();
+        const AndroidNotificationChannel channel = AndroidNotificationChannel(
+          'debt_reminders',
+          'Debt Reminders',
+          description: 'Notifications for debt return dates',
+          importance: Importance.max,
+        );
+        await androidPlugin.createNotificationChannel(channel);
       }
     } catch (e) {
       print('Error initializing notifications: $e');
     }
   }
 
+  static Future<bool> requestPermission() async {
+    try {
+      final status = await Permission.notification.status;
+      if (status.isDenied) {
+        final result = await Permission.notification.request();
+        return result.isGranted;
+      }
+      return status.isGranted;
+    } catch (e) {
+      print('Error requesting notification permission: $e');
+      return false;
+    }
+  }
+
   static Future<void> scheduleDebtReminder({
-    required String id,
+    required int id,
     required String personName,
     required double amount,
     required String currency,
     required DateTime scheduledDate,
   }) async {
-    // Schedule for 7 AM on the return date
-    final scheduledDateTime = DateTime(
-      scheduledDate.year,
-      scheduledDate.month,
-      scheduledDate.day,
-      7, 0, 0,
-    );
+    try {
+      // Request permission if not already granted
+      await requestPermission();
 
-    if (scheduledDateTime.isBefore(DateTime.now())) return;
+      // Schedule for 9 AM on the return date
+      final scheduledDateTime = DateTime(
+        scheduledDate.year,
+        scheduledDate.month,
+        scheduledDate.day,
+        9, 0, 0,
+      );
 
-    await _notifications.zonedSchedule(
-      id.hashCode,
-      'Debt Reminder: $personName',
-      'Today is the expected date to settle the debt of $currency $amount.',
-      tz.TZDateTime.from(scheduledDateTime, tz.local),
-      const NotificationDetails(
-        android: AndroidNotificationDetails(
-          'debt_reminders',
-          'Debt Reminders',
-          channelDescription: 'Notifications for debt return dates',
-          importance: Importance.max,
-          priority: Priority.high,
-          showWhen: true,
-          icon: 'ic_notification',
+      if (scheduledDateTime.isBefore(DateTime.now())) return;
+
+      final tzDateTime = tz.TZDateTime.from(scheduledDateTime, tz.local);
+
+      await _notifications.zonedSchedule(
+        id,
+        'Debt Reminder: $personName',
+        'Today is the expected date to settle the debt of $currency $amount.',
+        tzDateTime,
+        const NotificationDetails(
+          android: AndroidNotificationDetails(
+            'debt_reminders',
+            'Debt Reminders',
+            channelDescription: 'Notifications for debt return dates',
+            importance: Importance.max,
+            priority: Priority.high,
+            showWhen: true,
+            icon: 'ic_notification',
+          ),
         ),
-      ),
-      androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
-      uiLocalNotificationDateInterpretation:
-          UILocalNotificationDateInterpretation.absoluteTime,
-    );
+        androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+        uiLocalNotificationDateInterpretation:
+            UILocalNotificationDateInterpretation.absoluteTime,
+      );
+      print('Scheduled debt reminder for $personName at $tzDateTime');
+    } catch (e) {
+      print('Error scheduling debt reminder for $id: $e');
+    }
   }
 
-  static Future<void> cancelReminder(String id) async {
-    await _notifications.cancel(id.hashCode);
+  static Future<void> cancelDebtReminder(int id) async {
+    try {
+      await _notifications.cancel(id);
+    } catch (e) {
+      print('Error cancelling reminder for $id: $e');
+    }
   }
 }

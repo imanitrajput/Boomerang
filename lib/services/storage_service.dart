@@ -4,9 +4,9 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:csv/csv.dart' as csv;
 import '../models/debt.dart';
 
-import 'download_helper_stub.dart'
-    if (dart.library.html) 'download_helper_web.dart'
-    if (dart.library.io) 'download_helper_io.dart';
+import '../utils/download_helper_stub.dart'
+    if (dart.library.html) '../utils/download_helper_web.dart'
+    if (dart.library.io) '../utils/download_helper_io.dart';
 
 class StorageService {
   static Future<void> exportJson(List<Debt> debts) async {

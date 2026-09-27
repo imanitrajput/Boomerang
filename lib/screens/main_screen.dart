@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'dashboard_screen.dart';
 import 'settings_screen.dart';
+import '../services/notification_service.dart';
 
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
@@ -11,6 +12,14 @@ class MainScreen extends StatefulWidget {
 
 class _MainScreenState extends State<MainScreen> {
   int _selectedIndex = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      NotificationService.requestPermission();
+    });
+  }
 
   static const List<Widget> _pages = <Widget>[
     DashboardScreen(),

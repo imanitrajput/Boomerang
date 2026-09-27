@@ -160,10 +160,10 @@ class SettingsScreen extends StatelessWidget {
                 context: context,
                 builder: (context) => AlertDialog(
                   title: const Text('Privacy Policy & Disclaimer'),
-                  content: const SingleChildScrollView(
+                  content: SingleChildScrollView(
                     child: Text.rich(
                       TextSpan(
-                        style: TextStyle(fontSize: 14, height: 1.5, color: Colors.black87),
+                        style: TextStyle(fontSize: 14, height: 1.5, color: theme.colorScheme.onSurface),
                         children: [
                           TextSpan(text: 'Welcome to '),
                           TextSpan(text: 'Boomerang', style: TextStyle(fontWeight: FontWeight.bold)),
