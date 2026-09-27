@@ -11,45 +11,6 @@
 - **Data Export & Import:** Securely export your data to CSV or JSON formats, and import it back whenever you switch devices.
 - **Dark & Light Mode:** Beautiful UI that respects your system's theme preferences.
 
-## 🚀 Getting Started
-
-To build and run this project locally, you will need to have [Flutter](https://flutter.dev/docs/get-started/install) installed on your system.
-
-### Prerequisites
-- Flutter SDK (>=3.12.2)
-- Android Studio / VS Code
-
-### Installation
-
-1. Clone the repository:
-   ```bash
-   git clone https://github.com/imanitrajput/boomerang.git
-   ```
-2. Navigate to the project directory:
-   ```bash
-   cd boomerang
-   ```
-3. Install dependencies:
-   ```bash
-   flutter pub get
-   ```
-4. Run the app:
-   ```bash
-   flutter run
-   ```
-
-## 🛠️ Building for Release
-
-To generate an APK for Android, run:
-```bash
-flutter build apk --release
-```
-To generate an App Bundle (for Google Play), run:
-```bash
-flutter build appbundle
-```
-
-*(Note: Don't forget to configure your keystore in `key.properties` before generating a release build!)*
 
 ## 📦 Tech Stack
 
