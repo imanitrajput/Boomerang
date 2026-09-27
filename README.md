@@ -1,6 +1,14 @@
-# 🪃 Boomerang
+# <img src="assets/app_icon.png" width="40" align="top" /> Boomerang
 
 **Boomerang** is a clean, minimal, and intuitive debt management app built with Flutter. It helps you keep track of money you've borrowed or lent to friends, ensuring that what goes around, always comes back!
+
+## 📸 Screenshots
+
+<p align="center">
+  <img src="assets/screenshot1.png" width="250" />
+  <img src="assets/screenshot2.png" width="250" />
+  <img src="assets/screenshot3.png" width="250" />
+</p>
 
 ## ✨ Features
 
